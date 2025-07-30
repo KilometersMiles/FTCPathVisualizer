@@ -1,0 +1,350 @@
+.App {
+  text-align: center;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.App-header {
+  background-color: #3C333F;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  font-size: calc(10px + 2vmin);
+  color: white;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Field Map Section */
+.Field-map {
+  position: relative;
+  width: 45%;
+  aspect-ratio: 1;
+  /*height: 90vh;*/
+  margin-right: 20px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.Field-image {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+
+.Field-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+}
+
+.Points-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 20;
+  cursor: pointer;
+}
+
+/* Sidebar Section */
+.Side-bar {
+  width: 50%;
+  height: 90vh;
+  background-color: #2a2a3a;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* Input Fields */
+.Input-field {
+  background-color: #3a3a4a;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.Input-field h5 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #F9DA38;
+  font-size: 1.2rem;
+}
+
+.Attribute-input-items-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.Attribute-input-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.Attribute-input-item label {
+  margin-right: 10px;
+  color: #ddd;
+  font-size: 0.9rem;
+}
+
+.Attribute-input-number {
+  width: 70px;
+  padding: 6px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background-color: #444;
+  color: white;
+}
+
+/* Path Manager */
+.path-manager {
+  background-color: #3a3a4a;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.path-manager h5 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #F9DA38;
+  font-size: 1.2rem;
+}
+
+.path-container {
+  margin-bottom: 15px;
+  background-color: #4a4a5a;
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.Path-input {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.Path-input input[type="text"] {
+  padding: 8px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background-color: #444;
+  color: white;
+}
+
+.Path-input select {
+  padding: 8px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background-color: #444;
+  color: white;
+}
+
+.Path-point-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.Path-point-input span {
+  color: #ddd;
+  font-size: 0.9rem;
+  min-width: 60px;
+}
+
+.Path-point-input input {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background-color: #444;
+  color: white;
+}
+
+.point-controls, .path-controls, .obstacle-point-controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* Buttons */
+button {
+  padding: 8px 15px;
+  background-color: #F9DA38;
+  color: #2a2a3a;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #ffea70;
+}
+
+button:disabled {
+  background-color: #666;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Animation Controls */
+.animation-controls {
+  background-color: #3a3a4a;
+  border-radius: 8px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.animation-controls button {
+  flex-shrink: 0;
+}
+
+.animation-controls input[type="range"] {
+  flex-grow: 1;
+  height: 6px;
+  background: #555;
+  border-radius: 3px;
+}
+
+.animation-controls input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  background: #F9DA38;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.animation-controls span {
+  color: white;
+  min-width: 40px;
+  text-align: center;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #3a3a4a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #F9DA38;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ffea70;
+}
+
+/* Obstacle Manager - Matches Path Manager styling */
+.obstacle-manager {
+  background-color: #3a3a4a;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.obstacle-manager h5 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #F9DA38;
+  font-size: 1.2rem;
+}
+
+.obstacle-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  padding: 8px 12px;
+  background-color: #4a4a5a;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.obstacle-header:hover {
+  background-color: #5a5a6a;
+}
+
+.obstacle-container {
+  background-color: #4a4a5a;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+}
+
+.obstacle-point {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+}
+
+.obstacle-point span {
+  color: #ddd;
+  font-size: 0.9rem;
+  min-width: 60px;
+}
+
+.obstacle-point input {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background-color: #444;
+  color: white;
+}
+
+.obstacle-controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* Make sure these match the button styling from Path Manager */
+.obstacle-controls button {
+  padding: 8px 15px;
+  background-color: #F9DA38;
+  color: #2a2a3a;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.obstacle-controls button:hover {
+  background-color: #ffea70;
+}
+
+.obstacle-controls button:disabled {
+  background-color: #666;
+  color: #999;
+  cursor: not-allowed;
+}
+
