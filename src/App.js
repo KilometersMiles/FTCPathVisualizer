@@ -1,5 +1,6 @@
 import field from "./field_map.jpg";
-import { useState, useRef, useEffect, useCallback } from 'react';import './App.css';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import './App.css';
 
 function App() {
 
@@ -1694,6 +1695,23 @@ class PriorityQueue {
             item.element.x === node.x && item.element.y === node.y
         );
     }
+}
+
+//return a java class that would drive the path out of the box.
+function generateCodeFromPath(paths) {
+  //start java class
+  var code = "package org.firstinspires.ftc.teamcode.auto; \n import com.qualcomm.robotcore.eventloop.opmode.Autonomous; \n import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode; \n import org.firstinspires.ftc.teamcode.Robot; \nimport org.firstinspires.ftc.teamcode.drivetrain.Mecanum; \n import org.firstinspires.ftc.teamcode.drivetrain.Point; \n \n import java.util.ArrayList; \n \n @Autonomous (name='Dad Test') \n public class dadTest extends LinearOpMode {\n    private Robot robot = new Robot(this);\n     @Override \n    public void runOpMode() {\n        robot.init();";
+  //for each path, add the code
+  paths.forEach(function(path) {
+    code += "\n ArrayList<Point> " + path.name + " = new ArrayList<Point>;"
+    path.points.forEach(function(point) {
+      code += "\n" + path.name + ".add(new Point(" + point.x + ", " + point.y + "));";
+    })
+    //set heading data and assign the path to a follwer
+    code += "\n \n PathFollower " + path.name + "Path = new PathFollower((Mecanum) robot.getDrivetrain());"
+    code += "\n " + path.name + "Path.setPath(" + path.name + ", " + path.startHeading + ", " + path.endHeading + ");"
+  })
+  return code;
 }
 
 // Obstacle input
