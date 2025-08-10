@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/FTCPathVisualizer/static/css/main.926ed14d.css",
+    "main.js": "/FTCPathVisualizer/static/js/main.b876ae8a.js",
+    "static/js/453.d2e6cec9.chunk.js": "/FTCPathVisualizer/static/js/453.d2e6cec9.chunk.js",
+    "static/media/field_map.jpg": "/FTCPathVisualizer/static/media/field_map.eb0e9cef94e3fb2701a2.jpg",
+    "index.html": "/FTCPathVisualizer/index.html",
+    "main.926ed14d.css.map": "/FTCPathVisualizer/static/css/main.926ed14d.css.map",
+    "main.b876ae8a.js.map": "/FTCPathVisualizer/static/js/main.b876ae8a.js.map",
+    "453.d2e6cec9.chunk.js.map": "/FTCPathVisualizer/static/js/453.d2e6cec9.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.926ed14d.css",
+    "static/js/main.b876ae8a.js"
+  ]
+}
