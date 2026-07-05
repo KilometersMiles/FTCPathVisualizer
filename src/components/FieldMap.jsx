@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { getSpeedColor } from '../utils/colors';
 import field from '../assets/DecodeField.jpg';
 
-function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, showObstacles, abortControllers, showSpeedGradient }) {
+function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, showObstacles, abortControllers, showSpeedGradient, boundaryRect, setBoundaryRect }) {
   const canvasRef = useRef(null);
   const pointsCanvasRef = useRef(null);
   const [draggingIndex, setDraggingIndex] = useState(null);
@@ -11,6 +11,7 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
     obstacleIndex: null,
     pointIndex: null
   });
+  const [boundaryDragging, setBoundaryDragging] = useState(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -29,9 +30,10 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
     const pointsCtx = pointsCanvas.getContext('2d');
 
     drawRobot(ctx, canvas, robot);
+    drawBoundaryRect(ctx, canvas);
     drawPoints(pointsCtx, pointsCanvas);
     drawObstacles(ctx, canvas);
-  }, [robot, setRobot, paths, setPaths, obstacles, setObstacles, showObstacles, showSpeedGradient]);
+  }, [robot, setRobot, paths, setPaths, obstacles, setObstacles, showObstacles, showSpeedGradient, boundaryRect]);
 
 
   const drawObstacles = (ctx, canvas) => {
@@ -42,8 +44,8 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
     obstacles.forEach(obstacle => {
       if (obstacle.points.length < 2) return;
 
-      ctx.fillStyle = 'rgba(255, 0, 0, 0.3)'; // Transparent red fill
-      ctx.strokeStyle = '#FF0000'; // Solid red border
+      ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+      ctx.strokeStyle = '#FF0000';
       ctx.lineWidth = 2;
 
       ctx.beginPath();
@@ -81,8 +83,7 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
           ctx.lineTo(x, y);
         }
 
-        // Draw obstacle points
-        ctx.fillStyle = '#FF0000'; //Red for points
+        ctx.fillStyle = '#FF0000';
         ctx.beginPath();
         ctx.arc(x, y, 8, 0, Math.PI * 2);
         ctx.fill();
@@ -93,6 +94,26 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
       ctx.stroke();
     });
 
+  };
+
+  const drawBoundaryRect = (ctx, canvas) => {
+    if (!boundaryRect.isVisible) return;
+    const scale = canvas.width / 3580;
+
+    ctx.fillStyle = 'rgba(43, 255, 0, 0.2)';
+    ctx.strokeStyle = '#00ff0d';
+    ctx.lineWidth = 2;
+
+    let maxXCoord = (boundaryRect.maxX * scale) + (canvas.width / 2);
+    let minXCoord = (boundaryRect.minX * scale) + (canvas.width / 2);
+    let minYCoord = canvas.height - (boundaryRect.minY * scale) - (canvas.height / 2);
+    let maxYCoord = canvas.height - (boundaryRect.maxY * scale) - (canvas.height / 2);
+
+    ctx.beginPath();
+    ctx.rect(minXCoord, maxYCoord, maxXCoord - minXCoord, minYCoord - maxYCoord);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
   };
 
   const drawPoints = (ctx, canvas) => {
@@ -169,7 +190,7 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
     const robotLength = robot.length * scale; // Convert to pixels
 
     ctx.translate(robot.x * scale, robot.y * scale);
-    ctx.rotate((robot.heading * Math.PI / 180) - Math.PI / 2);
+    ctx.rotate((robot.heading * Math.PI / 180) + Math.PI / 2);
 
     ctx.fillStyle = 'rgba(6, 6, 26, 0.84)';
     ctx.strokeStyle = '#7dd3fc';
@@ -242,11 +263,11 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
     ctx.moveTo(0, 0);
     ctx.lineTo(0, robotLength / 2);
     ctx.stroke();
-    ctx.shadowBlur=3
+    ctx.shadowBlur = 3
     ctx.beginPath();
     ctx.moveTo(-robotWidth * 0.14, robotLength / 2 - 2);
     ctx.lineTo(robotWidth * 0.14, robotLength / 2 - 2);
-    ctx.lineTo(0, robotLength / 2 + robotLength * 0.2); 
+    ctx.lineTo(0, robotLength / 2 + robotLength * 0.2);
     ctx.closePath();
     ctx.fill();
 
@@ -264,6 +285,26 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
     const mouseX = -((3580 / 2) - (e.clientX - rect.left) / scale);
     const mouseY = (3580 / 2) - ((e.clientY - rect.top) / scale); // Flip Y
 
+    if (boundaryRect.isVisible) {
+      const tolerance = 50;
+      if (Math.abs(mouseX - boundaryRect.minX) < tolerance && mouseY <= boundaryRect.maxY && mouseY >= boundaryRect.minY) {
+        setBoundaryDragging('minX');
+        return;
+      }
+      if (Math.abs(mouseX - boundaryRect.maxX) < tolerance && mouseY <= boundaryRect.maxY && mouseY >= boundaryRect.minY) {
+        setBoundaryDragging('maxX');
+        return;
+      }
+      if (Math.abs(mouseY - boundaryRect.minY) < tolerance && mouseX <= boundaryRect.maxX && mouseX >= boundaryRect.minX) {
+        setBoundaryDragging('minY');
+        return;
+      }
+      if (Math.abs(mouseY - boundaryRect.maxY) < tolerance && mouseX <= boundaryRect.maxX && mouseX >= boundaryRect.minX) {
+        setBoundaryDragging('maxY');
+        return;
+      }
+    }
+
     for (let i = 0; i < paths.length; i++) {
       const path = paths[i];
       const clickedIndex = path.points.findIndex(point => {
@@ -278,7 +319,6 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
       }
     }
 
-    // handles obstacle dragging
     for (let i = 0; i < obstacles.length; i++) {
       const obstacle = obstacles[i];
       const clickedIndex = obstacle.points.findIndex(point => {
@@ -294,14 +334,34 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
         return;
       }
     }
-
   };
 
   const handleMouseMove = (e) => {
-    if (draggingIndex === null && obstacleDragging.obstacleIndex === null) return;
+    if (draggingIndex === null && obstacleDragging.obstacleIndex === null && boundaryDragging === null) return;
 
     const canvas = pointsCanvasRef.current;
     if (!canvas) return;
+
+    if (boundaryDragging !== null) {
+      const rect = pointsCanvasRef.current.getBoundingClientRect();
+      const scale = pointsCanvasRef.current.width / 3580;
+      const currentX = -((3580 / 2) - (e.clientX - rect.left) / scale);
+      const currentY = (3580 / 2) - ((e.clientY - rect.top) / scale);
+
+      setBoundaryRect(prev => {
+        let next = { ...prev, [boundaryDragging]: boundaryDragging.endsWith('X') ? currentX : currentY };
+        if (next.minX > next.maxX) {
+          [next.minX, next.maxX] = [next.maxX, next.minX];
+          setBoundaryDragging(boundaryDragging === 'minX' ? 'maxX' : 'minX');
+        }
+        if (next.minY > next.maxY) {
+          [next.minY, next.maxY] = [next.maxY, next.minY];
+          setBoundaryDragging(boundaryDragging === 'minY' ? 'maxY' : 'minY');
+        }
+        return next;
+      });
+      return;
+    }
 
     const rect = canvas.getBoundingClientRect();
     const scale = canvas.width / 3580;
@@ -324,6 +384,7 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
 
     const newX = -((3580 / 2) - (e.clientX - rect.left) / scale);
     const newY = (3580 / 2) - ((e.clientY - rect.top) / scale); // Flip Y
+
 
     setPaths(prev => {
       const updated = [...prev];
@@ -362,11 +423,11 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
       obstacleIndex: null,
       pointIndex: null
     });
-
+    setBoundaryDragging(null);
   };
 
   useEffect(() => {
-    if (draggingIndex !== null || obstacleDragging.obstacleIndex !== null) {
+    if (draggingIndex !== null || obstacleDragging.obstacleIndex !== null || boundaryDragging != null) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
       return () => {
@@ -374,7 +435,7 @@ function FieldMap({ robot, setRobot, paths, setPaths, obstacles, setObstacles, s
         window.removeEventListener('mouseup', handleMouseUp);
       };
     }
-  }, [draggingIndex, pathDraggingIndex, obstacleDragging, handleMouseMove, handleMouseUp]);
+  }, [draggingIndex, pathDraggingIndex, obstacleDragging, boundaryDragging, handleMouseMove, handleMouseUp]);
 
   return (
     <div className="Field-map">

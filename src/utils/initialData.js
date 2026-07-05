@@ -6,7 +6,7 @@ export const ROBOT_ATTRIBUTES = [
   { name: "Length (in)", defaultValue: 15 },
   { name: "Mass (kg)", defaultValue: 15 },
   { name: "Moment of Inertia (kgm2)", defaultValue: .9 },
-  { name: "Wheel radius (mm)", defaultValue: .052 },
+  { name: "Wheel radius (m)", defaultValue: .052 },
   { name: "Max Angular Velocity (rad/s)", defaultValue: 6 },
   { name: "Max Forward Speed (mm/s)", defaultValue: 1900 }, // This is in mm/s
   { name: "Max Strafing Speed (mm/s)", defaultValue: 1680 }, // This is in mm/s
@@ -155,6 +155,14 @@ export const INITIAL_PATHS = [
     ]
   }
 ];
+
+export const INITIAL_BOUNDARY = {
+  isVisible: false,
+  maxX: 1775,
+  maxY: 1775,
+  minX: -1775,
+  minY: -1775
+}
 
 export const DEFAULT_NOTIFICATION = [
         {

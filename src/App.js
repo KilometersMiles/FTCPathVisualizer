@@ -3,7 +3,7 @@ import FieldMap from './components/FieldMap';
 import SideBar from './components/SideBar';
 import AnimationControls from './components/AnimationControls';
 import NotificationManager from './components/NotificationManager';
-import { INITIAL_PATHS, INITIAL_OBSTACLES, INITIAL_MODULES, ROBOT_ATTRIBUTES, INITIAL_ROBOT } from './utils/initialData';
+import { INITIAL_PATHS, INITIAL_OBSTACLES, INITIAL_MODULES, ROBOT_ATTRIBUTES, INITIAL_ROBOT, INITIAL_BOUNDARY } from './utils/initialData';
 import './App.css';
 import TopBar from './components/TopBar';
 
@@ -18,6 +18,8 @@ function App() {
     const [modulesExpanded, setModulesExpanded] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [showSpeedGradient, setShowSpeedGradient] = useState(false);
+    const [keepInRect, setKeepInRect] = useState(false);
+    const [boundaryRect, setBoundaryRect] = useState(INITIAL_BOUNDARY);
 
     const addNotification = (type, title, message, duration = 4000) => {
         let t = Math.random().toString(36).substr(2, 9)
@@ -64,6 +66,10 @@ function App() {
                 fileInputRef={fileInputRef}
                 showSpeedGradient={showSpeedGradient}
                 setShowSpeedGradient={setShowSpeedGradient}
+                keepInRect={keepInRect}
+                setKeepInRect={setKeepInRect}
+                boundaryRect={boundaryRect}
+                setBoundaryRect={setBoundaryRect}
             />
             <div className="Main-Content">
                 <NotificationManager
@@ -81,6 +87,8 @@ function App() {
                     showObstacles={obstaclesExpanded}
                     abortControllers={abortControllers}
                     showSpeedGradient={showSpeedGradient}
+                    boundaryRect={boundaryRect}
+                    setBoundaryRect={setBoundaryRect}
                 />
                 <SideBar
                     attributes={attributes}
@@ -104,6 +112,8 @@ function App() {
                     pathsTotal={pathsTotal}
                     setPathsTotal={setPathsTotal}
                     addNotification={addNotification}
+                    boundaryRect={boundaryRect}
+                    keepInRect={keepInRect}
                 />
             </div>
             <div className="Bottom-playback-bar">

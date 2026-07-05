@@ -1,5 +1,4 @@
 # Uses force/torque based model. Pretty good assumtions. check https://stumejournals.com/journals/tm/2025/2/51.full.pdf for info on modeling assumptions
-# TODO: better initial guesses. Probably use quitic hermite splines and maybe even invert the dynamics to guess times and controls.
 import casadi as ca
 import numpy as np
 import sys
@@ -63,7 +62,7 @@ def quinticHermiteSpline(t, p0, v0, a0, p1, v1, a1):
     
     return position, velocity, acceleration
 
-def findTrajectory (waypoints, obstacles, robot):
+def findTrajectory (waypoints, obstacles, robot, rect):
     opti = ca.Opti()
 
     nPerSegment = 30
@@ -170,6 +169,8 @@ def findTrajectory (waypoints, obstacles, robot):
             guessPos, guessVel, guessAccel = quinticHermiteSpline(fraction, pStart, vStart, aStart, pEnd, vEnd, aEnd)
             #linear for heading for simplicity
             guess_theta = wp_start['theta'] + fraction * (wp_end['theta'] - wp_start['theta'])
+            if wp_end.get('constrain_theta', False): #use constant on unconstraint. linear can throw off sometimes when it doesn't need to. 
+                guess_theta = wp_start['theta'] 
             cos_th = np.cos(guess_theta)
             sin_th = np.sin(guess_theta)
             v_body_x = guessVel[0] * cos_th + guessVel[1] * sin_th
@@ -190,6 +191,11 @@ def findTrajectory (waypoints, obstacles, robot):
                 dist_sq = (robot_x - obs['x'])**2 + (robot_y - obs['y'])**2
                 min_dist = robotRadius + obs['radius']
                 opti.subject_to(dist_sq >= min_dist**2)
+            # Keep in rect
+            opti.subject_to(robot_x < rect['maxX'])
+            opti.subject_to(robot_x > rect['minX'])
+            opti.subject_to(robot_y < rect['maxY'])
+            opti.subject_to(robot_y > rect['minY'])
             #max friction of tires
             # for w in range(4):
             #     forceOfWheelSquared = (Usegments[i][w, k] / r)**2
@@ -366,13 +372,16 @@ if __name__ == "__main__":
         raw_waypoints = input_data.get('waypoints', [])
         raw_obstacles = input_data.get('obstacles', [])
         raw_attributes = input_data.get('attributes', []) 
+        raw_boundaries = input_data.get('boundary', {}) 
         if not raw_waypoints:
             print("Warning: No waypoints sent from frontend. VERRY bad...", file=sys.stderr)        
         if not raw_obstacles:
             print("Warning: No waypoints sent from frontend. Bad...", file=sys.stderr)        
-
         if not raw_attributes:
             print("Warning: No attributes sent from frontend. Bad...", file=sys.stderr)        
+        if not raw_boundaries:
+            print("Warning: No boundaries sent from frontend. Bad...", file=sys.stderr)        
+
         formatted_waypoints = []
         for p in raw_waypoints:
             formatted_waypoints.append({
@@ -405,11 +414,16 @@ if __name__ == "__main__":
         buffer = attributes_dict.get('buffer')
         cof = attributes_dict.get('coefficientoffriction')
 
+        maxX = raw_boundaries['maxX'] / 1000
+        minX = raw_boundaries['minX'] / 1000
+        maxY = raw_boundaries['maxY'] / 1000
+        minY = raw_boundaries['minY'] / 1000
         gobilda435 = Motor(12, .1413, 3.795, 1.504)
+        rect = {'maxX': maxX, 'maxY': maxY, 'minX': minX, 'minY': minY}
         # robot = Drivetrain("Kevin", 15, .9, .048, .5, .5, .5, gobilda435, 1.9, 1.68, 3)
         robot = Drivetrain("Kevin", mass, momentofinertia, wheelradius, length, width, cof, gobilda435, maxforwardspeed, maxstrafingspeed, maxangularvelocity)
 
-        result_path, total_t = findTrajectory(formatted_waypoints, obstacles, robot)
+        result_path, total_t = findTrajectory(formatted_waypoints, obstacles, robot, rect)
 
         output_points = []
         for point in result_path:
@@ -447,7 +461,7 @@ if __name__ == "__main__":
         # gobilda435 = Motor(12, .1413, 3.795, 1.504)
         
         # robot = Drivetrain("Kevin", 15, .9, .048, .5, .5, .5, gobilda435, 1.9, 1.68, 3)
-        
+        # rect = {'maxX': 1.7, 'maxY': 1.7, 'minX': -1.7, 'minY': -1.7}
         # path, total_t = findTrajectory(waypoints=waypoints, obstacles=obstacles, robot=robot)
         # visualize_and_save(path, total_t)
     

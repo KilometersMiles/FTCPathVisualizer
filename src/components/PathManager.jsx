@@ -16,7 +16,7 @@ const updateCheckboxDefaults = (points) => {
   });
 };
 
-function PathManager({ attributes, paths, setPaths, setRobot, setAnimationState, robot, obstacles, abortControllers, pathsTotal, setPathsTotal, modules, setModules, addNotification }) {
+function PathManager({ attributes, paths, setPaths, setRobot, setAnimationState, robot, obstacles, abortControllers, pathsTotal, setPathsTotal, modules, setModules, addNotification, boundaryRect, keepInRect }) {
   // Fixed: Single path add/remove
   const handleAddPath = () => {
     setPathsTotal(prev => prev + 1);
@@ -96,6 +96,8 @@ function PathManager({ attributes, paths, setPaths, setRobot, setAnimationState,
             setModules={setModules}
             modules={modules}
             addNotification={addNotification}
+            boundaryRect={boundaryRect}
+            keepInRect={keepInRect}
           />
         </div>
       ))}
@@ -116,7 +118,7 @@ function PathManager({ attributes, paths, setPaths, setRobot, setAnimationState,
   );
 }
 
-function PathInput({ attributes, path, paths, setPaths, index, setRobot, obstacles, robot, abortControllers, pathsTotal, setPathsTotal, modules, setModules, addNotification }) {
+function PathInput({ attributes, path, paths, setPaths, index, setRobot, obstacles, robot, abortControllers, pathsTotal, setPathsTotal, modules, setModules, addNotification, boundaryRect, keepInRect }) {
   const selectOption = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
   const handleAddPoint = (e) => {
@@ -178,37 +180,70 @@ function PathInput({ attributes, path, paths, setPaths, index, setRobot, obstacl
     const controller = new AbortController();
     abortControllers.current[index] = controller;
     try {
-      addNotification('info', 'Optimizing path...', `Running solver parameters for ${path.name}`, 1000);
-      console.log("Starting optimization for:", path.name);
+      const pathName = path.name;
+      addNotification('info', 'Optimizing path...', `Running solver parameters for ${pathName}`, 1000);
+      console.log("Starting optimization for:", pathName);
+      let robotRadius = Math.sqrt(((robot.length) / 2) ** 2 + ((robot.width) / 2) ** 2);
+      let maxX = 20000000; //probably wont break if so big...
+      let minX = -20000000;
+      let maxY = 20000000;
+      let minY = -20000000;
+      if (keepInRect) {
+        maxX = boundaryRect.maxX - robotRadius;
+        minX = boundaryRect.minX + robotRadius;
+        maxY = boundaryRect.maxY - robotRadius;
+        minY = boundaryRect.minY + robotRadius;
+      }
       const optimizedPoints = await window.electronAPI.runOptimizer({
-        waypoints: path.points,
+        waypoints: updateCheckboxDefaults(path.points),
         obstacles: obstacles,
-        attributes: attributes
+        attributes: attributes,
+        boundary: {
+          maxX: maxX,
+          minX: minX,
+          maxY: maxY,
+          minY: minY
+        }
       }, controller.signal);
 
-      if (optimizedPoints === "Fail. Check conditions") {
-        throw new Error("PATH_IMPOSSIBLE");
-      }
+      const abort = new Promise((_, reject) => {
+        controller.signal.addEventListener('abort', () => {
+          reject(new DOMException('Aborted', "Aborted error oof"))
+        });
+      });
 
+      const safeOptimizedPoints = await Promise.race([optimizedPoints, abort]);
+
+      let optimizedSuccess = true;
       setPaths(prev => {
+        const optimizedPathIndexSafe = prev.findIndex(p => p.name === pathName);
+        if (optimizedPathIndexSafe === -1) {
+          addNotification('warning', 'Optimization Canceled', `Path deleted probably. ${pathName} generation canceled`, 3000);
+          optimizedSuccess = false;
+          console.log(optimizedSuccess);
+          return prev;
+        }
         const updated = [...prev];
-        updated[index] = {
-          ...updated[index],
-          pathpoints: optimizedPoints // Pathpoints is the curvy points
+        updated[optimizedPathIndexSafe] = {
+          ...updated[optimizedPathIndexSafe],
+          pathpoints: safeOptimizedPoints
         };
         return updated;
       });
-      addNotification("success", "Completed Optimization", path.name + " is now optimized.");
+      if (optimizedSuccess) {
+        console.log(optimizedSuccess);
+        addNotification("success", "Completed Optimization", path.name + " is now optimized.");
+      }
       console.log("Optimization completed for:", path.name);
       console.log(path);
 
     } catch (error) {
-      if (error.name === 'AbortError') {
+      if (error.name === 'Aborted error oof') {
         console.log(`Path ${index} generation canceled.`);
-        addNotification('warning', 'Optimization Canceled', `Process aborted by user. Path ${index} generation canceled`, 3000);
-      } else if (error.message === 'INFEASIBLE_PATH' || error.toString().includes("Fail")) {
+        addNotification('warning', 'Optimization Canceled', `Aborted by user. ${pathName} generation canceled`, 3000);
+      } else if (error.message.toString().includes("1")) {
         addNotification(
-          'error', 'Infeasible Spline Constraints', 'Path is impossible to execute. Try changing constraints.', 5000);
+          'error', 'Infeasible Spline Constraints', 'Path is impossible to execute. Try changing constraints or boundaries.', 5000);
       } else {
         console.error("Optimization failed:", error);
         addNotification(
@@ -324,6 +359,9 @@ function PathInput({ attributes, path, paths, setPaths, index, setRobot, obstacl
         </button>
         <button
           onClick={() => {
+            if (abortControllers.current[index]) {
+              abortControllers.current[index].abort();
+            }
             setPaths(prev => {
               const updated = [...prev];
               updated.splice(index, 1);
@@ -494,7 +532,7 @@ function PathPointInputField({ point, setPaths, pathIndex, pointIndex, setRobot,
                 const updated = [...prev];
                 updated[pathIndex].points[pointIndex] = {
                   ...updated[pathIndex].points[pointIndex],
-                  constrainHeading: e.target.checked,
+                  stop: e.target.checked,
                   userEditedStop: e.target.checked
                 };
                 updated[pathIndex].points = updateCheckboxDefaults(updated[pathIndex].points);
@@ -511,7 +549,7 @@ function PathPointInputField({ point, setPaths, pathIndex, pointIndex, setRobot,
                 const updated = [...prev];
                 updated[pathIndex].points[pointIndex] = {
                   ...updated[pathIndex].points[pointIndex],
-                  stop: e.target.checked,
+                  constrainHeading: e.target.checked,
                   userEditedConstrain: e.target.checked
                 };
                 updated[pathIndex].points = updateCheckboxDefaults(updated[pathIndex].points);

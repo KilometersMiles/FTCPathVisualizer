@@ -27,7 +27,7 @@ function createWindow() {
 
 ipcMain.handle('run-optimizer', async (event, payload) => {
   return new Promise((resolve, reject) => {
-    const { waypoints = [], obstacles = [], attributes = [] } = payload || {};
+    const { waypoints = [], obstacles = [], attributes = [], boundary = {} } = payload || {};
 
     let pythonProcess;
 
@@ -38,7 +38,7 @@ ipcMain.handle('run-optimizer', async (event, payload) => {
       pythonProcess = spawn('python', ['python/optim.py']);
     }
 
-    pythonProcess.stdin.write(JSON.stringify({ waypoints, obstacles, attributes }));
+    pythonProcess.stdin.write(JSON.stringify({ waypoints, obstacles, attributes, boundary }));
     pythonProcess.stdin.end();
 
     let result = '';

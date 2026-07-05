@@ -338,7 +338,7 @@ h5 {
 }
 
 /* Row 1: Coordinates row - elements dynamically shrink to stay in one block */
-.coordinates-row, .Attribute-input-items-container {
+.coordinates-row, .Attribute-input-items-container, .BoundaryRectContainer {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
@@ -349,7 +349,7 @@ h5 {
   flex: 1;
   min-width: 0;
 }
-.Attribute-input-item, .coord-input-wrapper {
+.Attribute-input-item, .coord-input-wrapper, .boundary-input-item {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -358,7 +358,7 @@ h5 {
   min-width: 100px; /* Allows numbers and wrappers to shrink without blowing layout */
 }
 
-.Attribute-input-item label, .coord-input-wrapper span, .Path-point-input span {
+.Attribute-input-item label, .coord-input-wrapper span, .Path-point-input span, .BoundaryRectContainer {
   font-size: 11px;
   /* text-transform: uppercase; */
   letter-spacing: 0.5px;
