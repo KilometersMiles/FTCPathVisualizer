@@ -6,9 +6,9 @@ function ObstacleManager({ obstacles, setObstacles, obstaclesExpanded, setObstac
     const newObstacle = {
       name: `Obstacle ${obstacles.length + 1}`,
       points: [
-        {x: Math.random() * 600, y: Math.random() * 600},
-        {x: Math.random() * 600, y: Math.random() * 600},
-        {x: Math.random() * 600, y: Math.random() * 600} // Start with 3 points
+        { x: Math.random() * 600, y: Math.random() * 600 },
+        { x: Math.random() * 600, y: Math.random() * 600 },
+        { x: Math.random() * 600, y: Math.random() * 600 } // Start with 3 points
       ]
     };
     setObstacles(prev => [...prev, newObstacle]);
@@ -30,13 +30,13 @@ function ObstacleManager({ obstacles, setObstacles, obstaclesExpanded, setObstac
       {obstaclesExpanded && (
         <>
           {obstacles.map((obstacle, index) => (
-            <ObstacleInput 
-              key={index} 
-              obstacle={obstacle} 
-              setObstacles={setObstacles} 
-              index={index} 
-              obstaclesExpanded={obstaclesExpanded} 
-              setObstaclesExpanded={setObstaclesExpanded} 
+            <ObstacleInput
+              key={index}
+              obstacle={obstacle}
+              setObstacles={setObstacles}
+              index={index}
+              obstaclesExpanded={obstaclesExpanded}
+              setObstaclesExpanded={setObstaclesExpanded}
             />
           ))}
         </>
@@ -44,10 +44,10 @@ function ObstacleManager({ obstacles, setObstacles, obstaclesExpanded, setObstac
 
       {obstaclesExpanded && (<div className="obstacle-controls">
         <button onClick={handleAddObstacle} title='Add Obstacle'>
-          <Plus size={14}/>&nbsp;&nbsp;Add Obstacle
+          <Plus size={14} />&nbsp;&nbsp;Add Obstacle
         </button>
-        <button 
-          onClick={handleRemoveObstacle} 
+        <button
+          onClick={handleRemoveObstacle}
           disabled={obstacles.length <= 0}
           title="Remove Obstacle"
         >
@@ -85,7 +85,7 @@ function ObstacleInput({ obstacle, setObstacles, index, obstaclesExpanded, setOb
         value={obstacle.name}
         onChange={(e) => {
           setObstacles(prev => {
-            const updated = [...prev]; 
+            const updated = [...prev];
             updated[index].name = e.target.value;
             return updated;
           });
@@ -99,10 +99,21 @@ function ObstacleInput({ obstacle, setObstacles, index, obstaclesExpanded, setOb
           <input
             type="number"
             placeholder="X (mm)"
-            value={point.x || 0}
+            value={point.x ?? 0}
+            onBlur={(e) => {
+              const val = e.target.value;
+              if (val === "") {
+                setPaths(prev => {
+                  const updated = [...prev];
+                  updated[pathIndex].points[pointIndex].x = 0;
+                  return updated;
+                });
+              }
+            }}
             onChange={(e) => {
-              const newX = parseFloat(e.target.value);
-              if (!isNaN(newX)) {
+              const val = e.target.value;
+              const newX = parseFloat(val);
+              if (val === "" || !isNaN(newX)) {
                 setObstacles(prev => {
                   const updated = [...prev];
                   updated[index].points[pointIndex].x = newX;
@@ -114,10 +125,21 @@ function ObstacleInput({ obstacle, setObstacles, index, obstaclesExpanded, setOb
           <input
             type="number"
             placeholder="Y (mm)"
-            value={point.y || 0}
+            value={point.y ?? 0}
+            onBlur={(e) => {
+              const val = e.target.value;
+              if (val === "") {
+                setPaths(prev => {
+                  const updated = [...prev];
+                  updated[pathIndex].points[pointIndex].y = 0;
+                  return updated;
+                });
+              }
+            }}
             onChange={(e) => {
-              const newY = parseFloat(e.target.value);
-              if (!isNaN(newY)) {
+              const val = e.target.value;
+              const newY = parseFloat(val);
+              if (val === "" || !isNaN(newY)) {
                 setObstacles(prev => {
                   const updated = [...prev];
                   updated[index].points[pointIndex].y = newY;
@@ -130,17 +152,17 @@ function ObstacleInput({ obstacle, setObstacles, index, obstaclesExpanded, setOb
       ))}
       <div className="obstacle-point-controls">
         <button onClick={handleAddPoint} title='Add Point'>
-          <Plus size={14}/>
+          <Plus size={14} />
         </button>
-        <button 
-          onClick={handleRemovePoint} 
+        <button
+          onClick={handleRemovePoint}
           disabled={obstacle.points.length <= 3}
           title='Remove Icon'
         >
-          <Trash2 size={14}/>
+          <Trash2 size={14} />
         </button>
       </div>
-    </div> 
+    </div>
   );
 }
 

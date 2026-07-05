@@ -375,10 +375,21 @@ function PathPointInputField({ point, setPaths, pathIndex, pointIndex, setRobot,
           type="number"
           className="Path-point-input-number"
           placeholder="X (mm)"
-          value={point.x || 0}
+          value={point.x ?? 0}
+          onBlur={(e) => {
+            const val = e.target.value;
+            if (val === "") {
+              setPaths(prev => {
+                const updated = [...prev];
+                updated[pathIndex].points[pointIndex].x = 0;
+                return updated;
+              });
+            }
+          }}
           onChange={(e) => {
-            const newX = parseFloat(e.target.value);
-            if (!isNaN(newX)) {
+            const val = e.target.value;
+            const newX = parseFloat(val);
+            if (val === "" || !isNaN(newX)) {
               setPaths(prev => {
                 const updated = [...prev];
                 updated[pathIndex].points[pointIndex].x = newX;
@@ -405,10 +416,21 @@ function PathPointInputField({ point, setPaths, pathIndex, pointIndex, setRobot,
           type="number"
           className="Path-point-input-number"
           placeholder="Y (mm)"
-          value={point.y || 0}
+          value={point.y ?? 0}
+          onBlur={(e) => {
+            const val = e.target.value;
+            if (val === "") {
+              setPaths(prev => {
+                const updated = [...prev];
+                updated[pathIndex].points[pointIndex].y = 0;
+                return updated;
+              });
+            }
+          }}
           onChange={(e) => {
-            const newY = parseFloat(e.target.value);
-            if (!isNaN(newY)) {
+            const val = e.target.value;
+            const newY = parseFloat(val);
+            if (val === "" || !isNaN(newY)) {
               setPaths(prev => {
                 const updated = [...prev];
                 updated[pathIndex].points[pointIndex].y = newY;
@@ -436,10 +458,21 @@ function PathPointInputField({ point, setPaths, pathIndex, pointIndex, setRobot,
           type="number"
           className="Path-point-input-number"
           placeholder="H (degrees)"
-          value={point.h || 0}
+          value={point.h ?? 0}
+          onBlur={(e) => {
+            const val = e.target.value;
+            if (val === "") {
+              setPaths(prev => {
+                const updated = [...prev];
+                updated[pathIndex].points[pointIndex].h = 0;
+                return updated;
+              });
+            }
+          }}
           onChange={(e) => {
-            const newH = parseFloat(e.target.value);
-            if (!isNaN(newH)) {
+            const val = e.target.value;
+            const newH = parseFloat(val);
+            if (val === "" || !isNaN(newH)) {
               setPaths(prev => {
                 const updated = [...prev];
                 updated[pathIndex].points[pointIndex].h = newH;
