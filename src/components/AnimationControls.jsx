@@ -64,7 +64,6 @@ function AnimationControls({
         const timeSteps = 30 * path.points.length; //matches optimizer
         for (let j = 0; j <= timeSteps; j++) {
           var timeTraveled = (j / timeSteps) * pathTime;
-          console.log(timeTraveled);
           var distanceForThisPoint = 0;
           if (timeTraveled <= timeAccel) {
             distanceForThisPoint = .5 * acceleration * timeTraveled * timeTraveled;

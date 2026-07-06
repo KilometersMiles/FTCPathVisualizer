@@ -1,14 +1,16 @@
 import { useState, useRef, useEffect } from 'react';
-import { Save, FolderOpen, Download, Settings, HelpCircle } from 'lucide-react';
+import { Save, FolderOpen, Download, Settings, HelpCircle, Zap } from 'lucide-react';
 import { saveFTCAutoFile, loadFTCAutoFile, exportPathData } from '../utils/fileHelpers';
 import AttributesInputField from './AttributesInputField';
 import Logo from "../assets/favicon-228.png";
 import MainHelp from "./MainHelp.jsx";
+import LightningButton from './LightningButton.jsx';
 import { INITIAL_BOUNDARY } from '../utils/initialData.js';
 
-function TopBar({ attributes, setAttributes, robot, setRobot, paths, setPaths, obstacles, setObstacles, fileInputRef, showSpeedGradient, setShowSpeedGradient, keepInRect, setKeepInRect, boundaryRect, setBoundaryRect }) {
+function TopBar({ attributes, setAttributes, robot, setRobot, paths, setPaths, obstacles, setObstacles, fileInputRef, showSpeedGradient, setShowSpeedGradient, keepInRect, setKeepInRect, boundaryRect, setBoundaryRect, handleGenerateAllPaths }) {
     const [isConfigOpen, setIsConfigOpen] = useState(false);
     const [isHelpOpen, setIsHelpOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const configRef = useRef(null);
     const helpRef = useRef(null);
 
@@ -43,6 +45,30 @@ function TopBar({ attributes, setAttributes, robot, setRobot, paths, setPaths, o
             </div>
 
             <div className='Top-bar-buttons'>
+                <LightningButton
+                    className={`generate-btn ${isLoading ? 'loading' : ''}`}
+                    style={{ width: 'fit-content', display: 'flex', flexDirection: 'row-reverse', gap: '4px', flexWrap: 'nowrap', justifyContent: 'center', alignItems: 'center' }}
+                    onClick={async () => {
+                        if (!isLoading) {
+                            setIsLoading(true);
+                            await handleGenerateAllPaths();
+                            setIsLoading(false);
+                        }
+                    }}
+                    disabled={isLoading}
+                    isLoading={isLoading}
+                >
+                    {!isLoading ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px' }}>
+                            <Zap size={14} /> <div>Generate All Paths</div>
+                        </div>
+                    ) : (
+                        <div style={{ display: 'none' }} />
+                    )}
+                </LightningButton>
+
+                <div className='Divider' />
+
                 <input
                     type="file"
                     accept=".lightspeed,application/json"

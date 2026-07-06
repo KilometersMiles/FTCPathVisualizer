@@ -16,7 +16,7 @@ const updateCheckboxDefaults = (points) => {
   });
 };
 
-function PathManager({ attributes, paths, setPaths, setRobot, setAnimationState, robot, obstacles, abortControllers, pathsTotal, setPathsTotal, modules, setModules, addNotification, boundaryRect, keepInRect }) {
+function PathManager({ attributes, paths, setPaths, setRobot, setAnimationState, robot, obstacles, abortControllers, pathsTotal, setPathsTotal, modules, setModules, addNotification, boundaryRect, keepInRect, handleGenerateAllPaths, generateOnePath, setPathLoadingStates, pathLoadingStates }) {
   // Fixed: Single path add/remove
   const handleAddPath = () => {
     setPathsTotal(prev => prev + 1);
@@ -98,6 +98,10 @@ function PathManager({ attributes, paths, setPaths, setRobot, setAnimationState,
             addNotification={addNotification}
             boundaryRect={boundaryRect}
             keepInRect={keepInRect}
+            handleGenerateAllPaths={handleGenerateAllPaths}
+            generateOnePath={generateOnePath}
+            pathLoadingStates={pathLoadingStates}
+            setPathLoadingStates={setPathLoadingStates}
           />
         </div>
       ))}
@@ -118,9 +122,9 @@ function PathManager({ attributes, paths, setPaths, setRobot, setAnimationState,
   );
 }
 
-function PathInput({ attributes, path, paths, setPaths, index, setRobot, obstacles, robot, abortControllers, pathsTotal, setPathsTotal, modules, setModules, addNotification, boundaryRect, keepInRect }) {
+function PathInput({ attributes, path, paths, setPaths, index, setRobot, obstacles, robot, abortControllers, pathsTotal, setPathsTotal, modules, setModules, addNotification, boundaryRect, keepInRect, handleGenerateAllPaths, generateOnePath, pathLoadingStates, setPathLoadingStates }) {
   const selectOption = useRef(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const isLoading = !!pathLoadingStates[index];
   const handleAddPoint = (e) => {
     e.stopPropagation(); // Prevent event bubbling
     e.preventDefault(); // Prevent default behavior
@@ -172,91 +176,15 @@ function PathInput({ attributes, path, paths, setPaths, index, setRobot, obstacl
       return updated;
     });
   };
+
   const handleGeneratePath = async () => {
-    if (isLoading) {
-      return; // Prevent multiple clicks
-    }
-    setIsLoading(true);
-    const controller = new AbortController();
-    abortControllers.current[index] = controller;
-    try {
-      const pathName = path.name;
-      addNotification('info', 'Optimizing path...', `Running solver parameters for ${pathName}`, 1000);
-      console.log("Starting optimization for:", pathName);
-      let robotRadius = Math.sqrt(((robot.length) / 2) ** 2 + ((robot.width) / 2) ** 2);
-      let maxX = 20000000; //probably wont break if so big...
-      let minX = -20000000;
-      let maxY = 20000000;
-      let minY = -20000000;
-      if (keepInRect) {
-        maxX = boundaryRect.maxX - robotRadius;
-        minX = boundaryRect.minX + robotRadius;
-        maxY = boundaryRect.maxY - robotRadius;
-        minY = boundaryRect.minY + robotRadius;
-      }
-      const optimizedPoints = await window.electronAPI.runOptimizer({
-        waypoints: updateCheckboxDefaults(path.points),
-        obstacles: obstacles,
-        attributes: attributes,
-        boundary: {
-          maxX: maxX,
-          minX: minX,
-          maxY: maxY,
-          minY: minY
-        }
-      }, controller.signal);
-
-      const abort = new Promise((_, reject) => {
-        controller.signal.addEventListener('abort', () => {
-          reject(new DOMException('Aborted', "Aborted error oof"))
-        });
-      });
-
-      const safeOptimizedPoints = await Promise.race([optimizedPoints, abort]);
-
-      let optimizedSuccess = true;
-      setPaths(prev => {
-        const optimizedPathIndexSafe = prev.findIndex(p => p.name === pathName);
-        if (optimizedPathIndexSafe === -1) {
-          addNotification('warning', 'Optimization Canceled', `Path deleted probably. ${pathName} generation canceled`, 3000);
-          optimizedSuccess = false;
-          console.log(optimizedSuccess);
-          return prev;
-        }
-        const updated = [...prev];
-        updated[optimizedPathIndexSafe] = {
-          ...updated[optimizedPathIndexSafe],
-          pathpoints: safeOptimizedPoints
-        };
-        return updated;
-      });
-      if (optimizedSuccess) {
-        console.log(optimizedSuccess);
-        addNotification("success", "Completed Optimization", path.name + " is now optimized.");
-      }
-      console.log("Optimization completed for:", path.name);
-      console.log(path);
-
-    } catch (error) {
-      if (error.name === 'Aborted error oof') {
-        console.log(`Path ${index} generation canceled.`);
-        addNotification('warning', 'Optimization Canceled', `Aborted by user. ${pathName} generation canceled`, 3000);
-      } else if (error.message.toString().includes("1")) {
-        addNotification(
-          'error', 'Infeasible Spline Constraints', 'Path is impossible to execute. Try changing constraints or boundaries.', 5000);
-      } else {
-        console.error("Optimization failed:", error);
-        addNotification(
-          'error',
-          'Optimization Failed',
-          error.message || 'An unexpected backend issue has occured.',
-          5000
-        );
-      }
-    } finally {
-      setIsLoading(false);
-      delete abortControllers.current[index];
-    }
+    if (isLoading) return;
+    await generateOnePath(index, path);
+    setPaths(prev => {
+      const updated = [...prev];
+      updated[index].points = updateCheckboxDefaults(updated[index].points);
+      return updated;
+    });
   };
 
   const handleRunThetaStar = () => {

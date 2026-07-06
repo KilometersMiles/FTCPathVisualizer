@@ -30,7 +30,7 @@ export const INITIAL_ROBOT = {
 
 export const INITIAL_MODULES = [
   {
-    name: "Pick Up Stack 1",
+    name: "Pick Up Stack 1 RED",
     path: {
       name: "Stack 1 Approach",
       startHeading: 180,
@@ -44,7 +44,7 @@ export const INITIAL_MODULES = [
     }
   },
   {
-    name: "Pick Up Stack 2",
+    name: "Pick Up Stack 2 RED",
     path: {
       name: "Stack 2 Approach",
       startHeading: 180,
@@ -58,7 +58,7 @@ export const INITIAL_MODULES = [
     }
   },
   {
-    name: "Pick Up Stack 3",
+    name: "Pick Up Stack 3 RED",
     path: {
       name: "Stack 3 Approach",
       startHeading: 180,
@@ -68,6 +68,47 @@ export const INITIAL_MODULES = [
         { x: 900, y: -600 },
         { x: 900, y: -750 },
         { x: 900, y: -1200 }
+      ]
+    }
+  },  {
+    name: "Pick Up Stack 1 BLUE",
+    path: {
+      name: "Stack 1 Approach",
+      startHeading: 180,
+      endHeading: 180,
+      headingControlType: "constant",
+      points: [
+        { x: -300, y: 600 },
+        { x: -300, y: 750 },
+        { x: -300, y: 1200 }
+      ]
+    }
+  },
+  {
+    name: "Pick Up Stack 2 BLUE",
+    path: {
+      name: "Stack 2 Approach",
+      startHeading: 180,
+      endHeading: 180,
+      headingControlType: "constant",
+      points: [
+        { x: 300, y: 600 },
+        { x: 300, y: 750 },
+        { x: 300, y: 1200 }
+      ]
+    }
+  },
+  {
+    name: "Pick Up Stack 3 BLUE",
+    path: {
+      name: "Stack 3 Approach",
+      startHeading: 180,
+      endHeading: 180,
+      headingControlType: "constant",
+      points: [
+        { x: 900, y: 600 },
+        { x: 900, y: 750 },
+        { x: 900, y: 1200 }
       ]
     }
   },
