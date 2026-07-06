@@ -72,6 +72,10 @@ export function exportPathData(paths) {
         const vx = point.v_bx;
         const vy = point.v_by;
         const omega = point.omega;
+        const u1 = point.u1;
+        const u2 = point.u2;
+        const u3 = point.u3;
+        const u4 = point.u4;
 
         const dataPoint = {
           "t": t,
@@ -80,7 +84,11 @@ export function exportPathData(paths) {
           "theta": theta,
           "vx": vx,
           "vy": vy,
-          "omega": omega
+          "omega": omega,
+          "u1": u1,
+          "u2": u2,
+          "u3": u3,
+          "u4": u4
         }
         data.push(dataPoint);
       };

@@ -270,11 +270,17 @@ def findTrajectory (waypoints, obstacles, robot, rect):
     for i in range(numSegments):
         T_val = sol.value(Tsegments[i])
         X_val = sol.value(Xsegments[i])
+        U_val = sol.value(Usegments[i])
         dt = T_val / nPerSegment
         
         # add all points
         limit = nPerSegment if i < numSegments - 1 else nPerSegment + 1
         for k in range(limit):
+            if k < nPerSegment:
+                u1, u2, u3, u4 = float(U_val[0, k]), float(U_val[1, k]), float(U_val[2, k]), float(U_val[3, k])
+            else:
+                u1, u2, u3, u4 = 0.0, 0.0, 0.0, 0.0
+            
             full_path_json.append({
                 "t": total_time_elapsed + k * dt,
                 "x": float(X_val[0, k]),
@@ -282,7 +288,11 @@ def findTrajectory (waypoints, obstacles, robot, rect):
                 "theta": float(X_val[4, k]),
                 "vx": float(X_val[1, k]),
                 "vy": float(X_val[3, k]),
-                "omega": float(X_val[5, k])
+                "omega": float(X_val[5, k]),
+                "u1": u1,
+                "u2": u2,
+                "u3": u3,
+                "u4": u4
             })
         total_time_elapsed += T_val
 
@@ -436,7 +446,11 @@ if __name__ == "__main__":
                 'omega': point['omega'],
                 'v_bx': point['vx'],
                 'v_by': point['vy'],
-                'v': float(np.sqrt(point['vx']**2 + point['vy']**2))
+                'v': float(np.sqrt(point['vx']**2 + point['vy']**2)),
+                'u1': point['u1'],
+                'u2': point['u2'],
+                'u3': point['u3'],
+                'u4': point['u4']
             })
         print(json.dumps(output_points))
         sys.stdout.flush()
